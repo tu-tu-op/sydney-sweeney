@@ -1,77 +1,141 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/routes.dart';
 import '../../design/tokens.dart';
-import '../../providers/auth_provider.dart';
+import '../../widgets/surface_card.dart';
 
-class SettingsScreen extends ConsumerStatefulWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+  State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _configuringPush = false;
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _pushNotifications = true;
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(authControllerProvider).asData?.value.user;
+    const email = 'elementary221b@gmail.com';
+    const displayName = 'John Doe';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Back',
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.arrow_back_rounded),
+        ),
+        title: const Text('Settings'),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1, color: SydneyColors.line),
+        ),
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(SydneySpacing.page),
           children: [
-            Text(
-              user?.displayName ?? 'Sydney user',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: SydneySpacing.xs),
-            Text(
-              user?.email ?? 'Signed in',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: SydneyColors.mutedInk),
+            SurfaceCard(
+              child: Row(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: const BoxDecoration(
+                      color: SydneyColors.primarySoft,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      'EL',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: SydneyColors.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: SydneySpacing.lg),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          displayName,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: SydneySpacing.xs),
+                        Text(
+                          email,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: SydneySpacing.xl),
-            _SettingsAction(
-              icon: Icons.notifications_outlined,
-              title: 'Push notifications',
-              body:
-                  _configuringPush
-                      ? 'Checking permission...'
-                      : 'Enable message and agent status alerts.',
-              trailing: TextButton(
-                onPressed: _configuringPush ? null : _configurePush,
-                child: const Text('Enable'),
-              ),
+            const _SectionLabel('Preferences'),
+            _SettingsGroup(
+              children: [
+                _SettingsRow(
+                  title: 'Push notifications',
+                  body: 'Enable message and agent status alerts.',
+                  trailing: Switch(
+                    value: _pushNotifications,
+                    onChanged:
+                        (value) => setState(() => _pushNotifications = value),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: SydneySpacing.md),
-            _SettingsAction(
-              icon: Icons.hub_outlined,
-              title: 'Connectors',
-              body: 'Review accounts approved for backend access.',
-              trailing: IconButton(
-                tooltip: 'Open connectors',
-                onPressed:
-                    () => Navigator.of(context).pushNamed(AppRoutes.connectors),
-                icon: const Icon(Icons.chevron_right_rounded),
-              ),
+            const SizedBox(height: SydneySpacing.xl),
+            const _SectionLabel('Security'),
+            _SettingsGroup(
+              children: [
+                _SettingsRow(
+                  title: 'Connectors',
+                  body: 'Review accounts approved for backend access.',
+                  trailing: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: SydneyColors.outline,
+                  ),
+                  onTap:
+                      () =>
+                          Navigator.of(context).pushNamed(AppRoutes.connectors),
+                ),
+              ],
             ),
-            const SizedBox(height: SydneySpacing.md),
-            const _SettingsAction(
-              icon: Icons.security_outlined,
-              title: 'Session storage',
-              body: 'This app stores only your Sydney session token on device.',
+            const SizedBox(height: SydneySpacing.xl),
+            const _SectionLabel('Privacy'),
+            const _SettingsGroup(
+              children: [
+                _SettingsRow(
+                  title: 'Session storage',
+                  body:
+                      'This app stores only your Sydney session token on device.',
+                ),
+              ],
             ),
             const SizedBox(height: SydneySpacing.xxl),
             OutlinedButton.icon(
               onPressed: _signOut,
               icon: const Icon(Icons.logout_rounded),
               label: const Text('Sign out'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: SydneyColors.danger,
+                side: const BorderSide(color: SydneyColors.dangerSoft),
+                minimumSize: const Size.fromHeight(50),
+              ),
+            ),
+            const SizedBox(height: SydneySpacing.xxl),
+            Text(
+              'Sydney Agent v1.2.4\nEncryption active',
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: SydneyColors.subtleInk),
             ),
           ],
         ),
@@ -79,93 +143,99 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Future<void> _configurePush() async {
-    setState(() => _configuringPush = true);
-    try {
-      final result = await ref.read(pushServiceProvider).configure();
-      if (!mounted) {
-        return;
-      }
-      final message =
-          result.isEnabled
-              ? 'Push notifications are enabled.'
-              : 'Push notifications were not approved.';
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.toString())));
-    } finally {
-      if (mounted) {
-        setState(() => _configuringPush = false);
-      }
-    }
-  }
-
-  Future<void> _signOut() async {
-    await ref.read(authControllerProvider.notifier).signOut();
-    if (!mounted) {
-      return;
-    }
+  void _signOut() {
     Navigator.of(
       context,
     ).pushNamedAndRemoveUntil(AppRoutes.signIn, (route) => false);
   }
 }
 
-class _SettingsAction extends StatelessWidget {
-  const _SettingsAction({
-    required this.icon,
-    required this.title,
-    required this.body,
-    this.trailing,
-  });
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
 
-  final IconData icon;
-  final String title;
-  final String body;
-  final Widget? trailing;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(SydneySpacing.lg),
-      decoration: BoxDecoration(
-        color: SydneyColors.surfaceRaised,
-        borderRadius: BorderRadius.circular(SydneyRadius.md),
-        border: Border.all(color: SydneyColors.line),
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: SydneySpacing.xs,
+        bottom: SydneySpacing.sm,
       ),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: SydneyColors.primary,
+          letterSpacing: 0,
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingsGroup extends StatelessWidget {
+  const _SettingsGroup({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return SurfaceCard(
+      padding: EdgeInsets.zero,
+      child: Column(mainAxisSize: MainAxisSize.min, children: children),
+    );
+  }
+}
+
+class _SettingsRow extends StatelessWidget {
+  const _SettingsRow({
+    required this.title,
+    required this.body,
+    this.trailing,
+    this.onTap,
+  });
+
+  final String title;
+  final String body;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final content = Padding(
+      padding: const EdgeInsets.all(SydneySpacing.lg),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, color: SydneyColors.primary),
-          const SizedBox(width: SydneySpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: Theme.of(context).textTheme.titleMedium),
+                Text(title, style: Theme.of(context).textTheme.titleSmall),
                 const SizedBox(height: SydneySpacing.xs),
                 Text(
                   body,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: SydneyColors.mutedInk,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: SydneyColors.mutedInk),
                 ),
               ],
             ),
           ),
           if (trailing != null) ...[
-            const SizedBox(width: SydneySpacing.sm),
+            const SizedBox(width: SydneySpacing.md),
             trailing!,
           ],
         ],
       ),
+    );
+
+    if (onTap == null) {
+      return content;
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(onTap: onTap, child: content),
     );
   }
 }

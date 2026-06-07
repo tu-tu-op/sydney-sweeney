@@ -16,7 +16,7 @@ class DataSummaryTemplate extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        Text(title, style: Theme.of(context).textTheme.titleSmall),
         if (summary != null && summary.isNotEmpty) ...[
           const SizedBox(height: SydneySpacing.sm),
           Text(
@@ -59,20 +59,23 @@ class _MetricPill extends StatelessWidget {
         vertical: SydneySpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: SydneyColors.infoSoft,
+        color: SydneyColors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(SydneyRadius.sm),
+        border: Border.all(color: SydneyColors.line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(value, style: Theme.of(context).textTheme.titleMedium),
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: SydneyColors.info),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: SydneyColors.mutedInk,
+              letterSpacing: 0,
+            ),
           ),
+          const SizedBox(height: SydneySpacing.xs),
+          Text(value, style: Theme.of(context).textTheme.titleSmall),
         ],
       ),
     );

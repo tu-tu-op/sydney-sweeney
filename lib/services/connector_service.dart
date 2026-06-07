@@ -122,8 +122,7 @@ List<Connector> _mockConnectorList() {
     Connector(
       id: 'gmail',
       name: 'Gmail',
-      description:
-          'Let agents read approved mailbox context through the backend.',
+      description: 'Read and send emails',
       status: ConnectorStatus.connected,
       iconName: 'mail',
       requiredScopes: ['Read selected email metadata', 'Draft replies'],
@@ -131,7 +130,7 @@ List<Connector> _mockConnectorList() {
     Connector(
       id: 'calendar',
       name: 'Google Calendar',
-      description: 'Use availability and upcoming events when you approve it.',
+      description: 'Manage schedule',
       status: ConnectorStatus.disconnected,
       iconName: 'calendar',
       requiredScopes: ['Read events', 'Create reminders'],
@@ -139,9 +138,9 @@ List<Connector> _mockConnectorList() {
     Connector(
       id: 'slack',
       name: 'Slack',
-      description: 'Watch selected channels and prepare concise updates.',
+      description: 'Action required',
       status: ConnectorStatus.actionRequired,
-      iconName: 'chat',
+      iconName: 'tag',
       requiredScopes: ['Read selected channels', 'Post drafts for approval'],
     ),
   ];

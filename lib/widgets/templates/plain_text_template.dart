@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import '../../design/tokens.dart';
 
 class PlainTextTemplate extends StatelessWidget {
-  const PlainTextTemplate({required this.data, super.key});
+  const PlainTextTemplate({required this.data, this.textColor, super.key});
 
   final Map<String, dynamic> data;
+  final Color? textColor;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class PlainTextTemplate extends StatelessWidget {
       text,
       style: Theme.of(
         context,
-      ).textTheme.bodyLarge?.copyWith(color: SydneyColors.ink),
+      ).textTheme.bodyMedium?.copyWith(color: textColor ?? SydneyColors.ink),
     );
   }
 }

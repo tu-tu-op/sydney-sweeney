@@ -23,7 +23,7 @@ class SydneyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       title: 'Sydney',
       theme: SydneyTheme.light,
-      home: const AuthGate(),
+      home: const InboxScreen(),
       onGenerateRoute: _onGenerateRoute,
     );
   }

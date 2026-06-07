@@ -39,4 +39,24 @@ class ConnectorsController extends AsyncNotifier<List<Connector>> {
       ];
     });
   }
+
+  void toggle(String connectorId) {
+    final current = state.asData?.value ?? const <Connector>[];
+    state = AsyncValue.data([
+      for (final connector in current)
+        if (connector.id == connectorId)
+          connector.copyWith(status: _nextStatus(connector.status))
+        else
+          connector,
+    ]);
+  }
+}
+
+ConnectorStatus _nextStatus(ConnectorStatus status) {
+  return switch (status) {
+    ConnectorStatus.connected => ConnectorStatus.disconnected,
+    ConnectorStatus.disconnected => ConnectorStatus.connected,
+    ConnectorStatus.actionRequired => ConnectorStatus.connected,
+    ConnectorStatus.linking => ConnectorStatus.connected,
+  };
 }

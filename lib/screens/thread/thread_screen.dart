@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../design/tokens.dart';
 import '../../models/agent.dart';
 import '../../providers/messages_provider.dart';
-import '../../widgets/thread/message_bubble.dart';
+import '../../config/routes.dart';
+import '../../widgets/thread/message_card.dart';
 import '../../widgets/thread/reply_bar.dart';
 import '../../widgets/thread/typing_indicator.dart';
 
@@ -23,9 +24,6 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => ref.read(messageActionsProvider).connectLiveUpdates(),
-    );
   }
 
   @override
@@ -41,6 +39,10 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 0,
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1, color: SydneyColors.line),
+        ),
         title: Row(
           children: [
             CircleAvatar(
@@ -76,6 +78,21 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Connectors',
+            onPressed:
+                () => Navigator.of(context).pushNamed(AppRoutes.connectors),
+            icon: const Icon(Icons.shield_outlined),
+          ),
+          IconButton(
+            tooltip: 'Settings',
+            onPressed:
+                () => Navigator.of(context).pushNamed(AppRoutes.settings),
+            icon: const Icon(Icons.info_outline_rounded),
+          ),
+          const SizedBox(width: SydneySpacing.sm),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -99,7 +116,7 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
                               ? const TypingIndicator()
                               : const SizedBox.shrink();
                         }
-                        return MessageBubble(message: items[index]);
+                        return MessageCard(message: items[index]);
                       },
                     ),
                 loading: () => const _ThreadLoading(),

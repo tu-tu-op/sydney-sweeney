@@ -57,9 +57,9 @@ class AgentService {
         name: _nameFor(request.templateId),
         avatarInitials: _initialsFor(request.templateId),
         description: prompt,
-        lastMessagePreview: 'Ready when you are.',
+        lastMessagePreview: 'Setup checklist finalized.',
         latestMessageAt: DateTime.now(),
-        accentColor: 0xFF356C91,
+        accentColor: 0xFF8B5CF6,
       );
       _mockAgents = Agent.sortForInbox([..._mockAgents!, created]);
       return created;
@@ -111,7 +111,6 @@ List<Agent> _buildMockAgents() {
       description: 'Your home base for delegation.',
       lastMessagePreview: 'I can help you turn a sentence into a useful agent.',
       latestMessageAt: now.subtract(const Duration(minutes: 4)),
-      unreadCount: 1,
       isAssistant: true,
       isPinned: true,
       availability: AgentAvailability.ready,
@@ -125,9 +124,9 @@ List<Agent> _buildMockAgents() {
       description: 'Tracks deadlines and flags anything slipping.',
       lastMessagePreview: 'Two items need attention before Friday.',
       latestMessageAt: now.subtract(const Duration(hours: 1, minutes: 22)),
-      unreadCount: 2,
+      unreadCount: 1,
       availability: AgentAvailability.thinking,
-      accentColor: 0xFF356C91,
+      accentColor: 0xFFC07A22,
     ),
     Agent(
       id: 'agent_research',
@@ -137,7 +136,7 @@ List<Agent> _buildMockAgents() {
       description: 'Collects weekly market notes.',
       lastMessagePreview: 'I summarized the latest category shifts.',
       latestMessageAt: now.subtract(const Duration(hours: 5, minutes: 8)),
-      accentColor: 0xFFC07A22,
+      accentColor: 0xFF356C91,
     ),
   ];
 }
@@ -148,7 +147,7 @@ String _nameFor(String templateId) {
     'urgent' => 'Priority Agent',
     'summary' => 'Summary Agent',
     'checklist' => 'Checklist Agent',
-    _ => 'New Agent',
+    _ => 'Custom Agent',
   };
 }
 

@@ -5,7 +5,8 @@ import '../../config/routes.dart';
 import '../../design/tokens.dart';
 import '../../models/agent.dart';
 import '../../providers/agents_provider.dart';
-import '../../widgets/inbox/agent_tile.dart';
+import '../../widgets/app_bottom_nav.dart';
+import '../../widgets/inbox/agent_list_item.dart';
 
 class InboxScreen extends ConsumerWidget {
   const InboxScreen({super.key});
@@ -16,7 +17,16 @@ class InboxScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sydney'),
+        leading: IconButton(
+          tooltip: 'Menu',
+          onPressed: () {},
+          icon: const Icon(Icons.menu_rounded),
+        ),
+        title: const Text('Inbox'),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1, color: SydneyColors.line),
+        ),
         actions: [
           IconButton(
             tooltip: 'Connectors',
@@ -30,9 +40,11 @@ class InboxScreen extends ConsumerWidget {
                 () => Navigator.of(context).pushNamed(AppRoutes.settings),
             icon: const Icon(Icons.settings_outlined),
           ),
+          const SizedBox(width: SydneySpacing.sm),
         ],
       ),
       body: SafeArea(
+        bottom: false,
         child: RefreshIndicator(
           color: SydneyColors.primary,
           onRefresh: () => ref.read(agentsProvider.notifier).refresh(),
@@ -48,13 +60,35 @@ class InboxScreen extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: SydneyColors.primary,
-        foregroundColor: Colors.white,
         onPressed: () => Navigator.of(context).pushNamed(AppRoutes.create),
         icon: const Icon(Icons.add_rounded),
         label: const Text('New'),
       ),
+      bottomNavigationBar: AppBottomNav(
+        currentIndex: 0,
+        onSelected: (index) => _handleNav(context, ref, index),
+      ),
     );
+  }
+
+  void _handleNav(BuildContext context, WidgetRef ref, int index) {
+    if (index == 0) {
+      return;
+    }
+    if (index == 1) {
+      final agents = ref.read(agentsProvider).asData?.value ?? const <Agent>[];
+      final scout = agents.firstWhere(
+        (agent) => agent.threadId == 'thread_research',
+        orElse: _researchFallback,
+      );
+      Navigator.of(context).pushNamed(AppRoutes.thread, arguments: scout);
+      return;
+    }
+    if (index == 2) {
+      Navigator.of(context).pushNamed(AppRoutes.connectors);
+      return;
+    }
+    Navigator.of(context).pushNamed(AppRoutes.settings);
   }
 }
 
@@ -66,64 +100,54 @@ class _InboxList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final visibleAgents = agents.isEmpty ? [_assistantFallback()] : agents;
-    return ListView.separated(
+    return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(
         SydneySpacing.page,
-        SydneySpacing.sm,
+        SydneySpacing.lg,
         SydneySpacing.page,
-        96,
+        118,
       ),
-      itemCount: visibleAgents.length + (visibleAgents.length == 1 ? 1 : 0),
-      separatorBuilder: (_, index) {
-        if (index >= visibleAgents.length - 1) {
-          return const SizedBox(height: SydneySpacing.lg);
-        }
-        return const Divider(height: 1, indent: 68);
-      },
-      itemBuilder: (context, index) {
-        if (index >= visibleAgents.length) {
-          return const _WarmInvitation();
-        }
-        final agent = visibleAgents[index];
-        return AgentTile(
-          agent: agent,
-          onTap:
-              () => Navigator.of(
-                context,
-              ).pushNamed(AppRoutes.thread, arguments: agent),
-        );
-      },
+      children: [
+        const _SystemPill(),
+        const SizedBox(height: SydneySpacing.lg),
+        for (final agent in visibleAgents) ...[
+          AgentListItem(
+            agent: agent,
+            onTap:
+                () => Navigator.of(
+                  context,
+                ).pushNamed(AppRoutes.thread, arguments: agent),
+          ),
+          const SizedBox(height: SydneySpacing.md),
+        ],
+      ],
     );
   }
 }
 
-class _WarmInvitation extends StatelessWidget {
-  const _WarmInvitation();
+class _SystemPill extends StatelessWidget {
+  const _SystemPill();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(SydneySpacing.lg),
-      decoration: BoxDecoration(
-        color: SydneyColors.surfaceWarm,
-        borderRadius: BorderRadius.circular(SydneyRadius.md),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Start with one sentence',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: SydneySpacing.xs),
-          Text(
-            'Create an agent for something you want watched, summarized, or prepared.',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: SydneyColors.mutedInk),
-          ),
-        ],
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: SydneySpacing.lg,
+          vertical: SydneySpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: SydneyColors.systemBubble,
+          borderRadius: BorderRadius.circular(SydneyRadius.full),
+        ),
+        child: Text(
+          'Assistant is pinned so you always have a place to start.',
+          textAlign: TextAlign.center,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: SydneyColors.onSurfaceVariant),
+        ),
       ),
     );
   }
@@ -136,16 +160,26 @@ class _InboxLoading extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(SydneySpacing.page),
+      padding: const EdgeInsets.fromLTRB(
+        SydneySpacing.page,
+        SydneySpacing.lg,
+        SydneySpacing.page,
+        118,
+      ),
       itemCount: 4,
-      separatorBuilder: (_, _) => const SizedBox(height: SydneySpacing.lg),
+      separatorBuilder: (_, _) => const SizedBox(height: SydneySpacing.md),
       itemBuilder: (context, index) {
         return Container(
-          height: 64,
+          height: index == 0 ? 34 : 82,
           decoration: BoxDecoration(
-            color: SydneyColors.surfaceRaised,
-            borderRadius: BorderRadius.circular(SydneyRadius.md),
-            border: Border.all(color: SydneyColors.line),
+            color:
+                index == 0
+                    ? SydneyColors.systemBubble
+                    : SydneyColors.surfaceRaised,
+            borderRadius: BorderRadius.circular(
+              index == 0 ? SydneyRadius.full : SydneyRadius.sm,
+            ),
+            border: index == 0 ? null : Border.all(color: SydneyColors.line),
           ),
         );
       },
@@ -190,9 +224,22 @@ Agent _assistantFallback() {
     name: 'Assistant',
     avatarInitials: 'S',
     description: 'Your home base for delegation.',
-    lastMessagePreview: 'Create your first agent when you are ready.',
+    lastMessagePreview: 'I can help you turn a sentence into a useful agent.',
     latestMessageAt: DateTime.now(),
     isAssistant: true,
     isPinned: true,
+  );
+}
+
+Agent _researchFallback() {
+  return Agent(
+    id: 'agent_research',
+    threadId: 'thread_research',
+    name: 'Research Scout',
+    avatarInitials: 'RS',
+    description: 'Collects weekly market notes.',
+    lastMessagePreview: 'I summarized the latest category shifts.',
+    latestMessageAt: DateTime.now(),
+    accentColor: 0xFF356C91,
   );
 }

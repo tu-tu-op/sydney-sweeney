@@ -15,29 +15,18 @@ class StreakCounterTemplate extends StatelessWidget {
     final caption = data['caption']?.toString();
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 58,
-          height: 58,
-          decoration: BoxDecoration(
-            color: SydneyColors.primarySoft,
-            borderRadius: BorderRadius.circular(SydneyRadius.lg),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            count.toString(),
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(color: SydneyColors.primary),
-          ),
+        const Padding(
+          padding: EdgeInsets.only(top: 1),
+          child: Icon(Icons.info_outline_rounded, color: SydneyColors.info),
         ),
         const SizedBox(width: SydneySpacing.md),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: Theme.of(context).textTheme.titleMedium),
+              Text(label, style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: SydneySpacing.xs),
               Text(
                 '$count $unit',

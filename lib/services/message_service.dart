@@ -135,6 +135,32 @@ List<Message> _mockThread(String threadId) {
 
   if (threadId == 'thread_research') {
     return [
+      Message.system(
+        id: 'research_system_1',
+        threadId: threadId,
+        text: 'Assistant is pinned so you always have a place to start.',
+        createdAt: now.subtract(const Duration(hours: 7)),
+      ),
+      Message(
+        id: 'research_intro',
+        threadId: threadId,
+        sender: MessageSender.agent,
+        createdAt: now.subtract(const Duration(hours: 6, minutes: 45)),
+        content: {
+          'template': 'plain_text',
+          'data': {
+            'text':
+                'Tell me what you want watched, summarized, reminded, or prepared. One sentence is enough.',
+          },
+        },
+      ),
+      Message.plainText(
+        id: 'research_user_1',
+        threadId: threadId,
+        sender: MessageSender.user,
+        text: 'Summarize the latest category shifts for the market pulse.',
+        createdAt: now.subtract(const Duration(hours: 6, minutes: 15)),
+      ),
       Message(
         id: 'research_1',
         threadId: threadId,
@@ -160,10 +186,12 @@ List<Message> _mockThread(String threadId) {
         sender: MessageSender.agent,
         createdAt: now.subtract(const Duration(hours: 5, minutes: 8)),
         content: {
-          'template': 'plain_text',
+          'template': 'streak_counter',
           'data': {
-            'text':
-                'I saved a concise summary here. I can turn it into a weekly digest when you are ready.',
+            'label': 'Delegation streak',
+            'count': 3,
+            'unit': 'days',
+            'caption': 'Small, steady handoffs build trust.',
           },
         },
       ),
